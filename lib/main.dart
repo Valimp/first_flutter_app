@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:first_flutter_app/product.dart';
+import 'package:first_flutter_app/app_colors.dart';
 import 'package:first_flutter_app/app_icons.dart';
 
 void main() {
@@ -7,350 +8,674 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
-      title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: const Color(0xFF080040),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+        primaryColor: AppColors.blue,
+        primaryColorLight: AppColors.blueLight,
+        primaryColorDark: AppColors.blueDark,
+        fontFamily: 'Avenir',
+        appBarTheme: const AppBarTheme(
+          centerTitle: false,
+          backgroundColor: AppColors.white,
+          elevation: 0.0,
+          iconTheme: IconThemeData(
+            color: AppColors.blue,
           ),
-        fontFamily: 'Avenir'
+          titleTextStyle: TextStyle(
+            color: AppColors.blue,
+            fontSize: 18.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        textTheme: const TextTheme(
+          headline1: TextStyle(
+            color: AppColors.blue,
+            fontSize: 22.0,
+            fontWeight: FontWeight.bold,
+          ),
+          headline2: TextStyle(
+            color: AppColors.gray2,
+            fontSize: 18.0,
+          ),
+          headline3: TextStyle(
+            color: AppColors.gray3,
+            fontSize: 17.0,
+          ),
+          headline4: TextStyle(
+            color: AppColors.blue,
+            fontSize: 17.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        dividerColor: AppColors.gray2,
       ),
-      home: const ProductDetail(),
+      home: ProductSummary(),
     );
   }
 }
 
-/// EMPTYSCREEN
-class EmptyScreen extends StatelessWidget {
-  const EmptyScreen({Key? key}) : super(key: key);
+class ProductSummary extends StatefulWidget {
+  static const double kImageHeight = 300.0;
+  final ScrollController _controller;
 
-  //final double height = MediaQuery.of(context).size.height;
+  ProductSummary({
+    Key? key,
+  })  : _controller = ScrollController(),
+        super(key: key);
+
+  @override
+  State<ProductSummary> createState() => _ProductSummaryState();
+}
+
+class _ProductSummaryState extends State<ProductSummary> {
+
+  ProductDetailsCurrentTab currentTab = ProductDetailsCurrentTab.summary;
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      ProductDetailsCurrentTab newTab = ProductDetailsCurrentTab.values[_selectedIndex];
+      currentTab = newTab;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    Widget currentScreen = FicheScreen(widget: widget);
 
-    final Size size = MediaQuery.of(context).size;
-    final double width = size.width;
-    final double height = size.height;
+    switch (currentTab) {
+      case ProductDetailsCurrentTab.summary:
+        currentScreen = FicheScreen(widget: widget);
+        break;
+      case ProductDetailsCurrentTab.info:
+        currentScreen = const Text("Caractéristiques");
+        break;
+      case ProductDetailsCurrentTab.nutrition:
+        currentScreen = const Text("Nutrition");
+        break;
+      case ProductDetailsCurrentTab.nutritionalValues:
+        currentScreen = const Text("Tableau");
+        break;
+    };
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.0,
-        title: const Text(
-          "Mes scans",
-          style: TextStyle(
-            color: Color(0xFF080040),
-            fontWeight: FontWeight.w600,
-            fontFamily: 'AppIcons'
-          ),
+      bottomNavigationBar: BottomNavigationBar(
+        unselectedLabelStyle: const TextStyle(
+            color: AppColors.gray3
         ),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(AppIcons.barcode),
+        unselectedItemColor: AppColors.gray3,
+        selectedLabelStyle: const TextStyle(
+          color: AppColors.blue
+        ),
+        selectedItemColor: AppColors.blue,
+        showUnselectedLabels: true,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+              icon: Icon(AppIcons.tab_barcode),
+              label: "Fiche"
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(AppIcons.tab_fridge),
+              label: "Caractéristiques"
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(AppIcons.tab_nutrition),
+              label: "Nutrition"
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(AppIcons.tab_array),
+              label: "Tableau"
           )
         ],
       ),
-      body: Align(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SvgPicture.asset("res/svg/ill_empty.svg"),
-            SizedBox(height: height * 0.10),
-            const Text(
-              "Vous n'avez pas encore \n scanné de produit",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-                height: 2,
-              ),
+      body: currentScreen,
+    );
+  }
+}
+
+class FicheScreen extends StatelessWidget {
+  const FicheScreen({
+    super.key,
+    required this.widget,
+  });
+
+  final ProductSummary widget;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(children: [
+      Image.network(
+        'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1610&q=80',
+        width: double.infinity,
+        height: ProductSummary.kImageHeight,
+        fit: BoxFit.cover,
+      ),
+      const Align(
+        alignment: AlignmentDirectional.topStart,
+        child: _HeaderIcon(
+          icon: AppIcons.close,
+          tooltip: 'Fermer l\'écran',
+        ),
+      ),
+      const Align(
+        alignment: AlignmentDirectional.topEnd,
+        child: _HeaderIcon(
+          icon: AppIcons.share,
+          tooltip: 'Partager',
+        ),
+      ),
+      Positioned.fill(
+        child: SingleChildScrollView(
+          controller: widget._controller,
+          child: Scrollbar(
+            controller: widget._controller,
+            isAlwaysShown: true,
+            child: Container(
+              margin:
+              const EdgeInsetsDirectional.only(top: ProductSummary.kImageHeight - 30.0),
+              child: const _Body(),
             ),
-            SizedBox(height: height * 0.05),
-            TextButton(
-                onPressed: () {
-                  print("Click");
-                },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF080040),
-                shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(22.0))),
-                backgroundColor: const Color(0xFFFBAF02),
-                padding: const EdgeInsets.all(20.0),
-              ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Text(
-                      "COMMENCER",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'AppIcons'
-                      ),
-                    ),
-                    SizedBox(width: 10.0),
-                    Icon(
-                      Icons.arrow_forward,
-                    ),
-                  ],
-                )
-            )
-          ],
+          ),
         ),
+      )
+    ]);
+  }
+}
+
+class _HeaderIcon extends StatelessWidget {
+  final IconData icon;
+  final String? tooltip;
+  final VoidCallback? onPressed;
+
+  const _HeaderIcon({required this.icon, this.tooltip, this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: IconButton(
+        padding: const EdgeInsets.all(15.0),
+        icon: Icon(
+          icon,
+          color: Colors.white,
+        ),
+        onPressed: onPressed,
+        tooltip: tooltip,
       ),
     );
   }
 }
 
+class _Body extends StatelessWidget {
+  static const double _kHorizontalPadding = 20.0;
+  static const double _kVerticalPadding = 30.0;
 
-/// SCREEN 1
-class ProductDetail extends StatelessWidget {
-  const ProductDetail({Key? key}) : super(key: key);
+  const _Body({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SizedBox.expand(
-        child: Stack(
-          children: const [
-            ProductImage(),
-            Positioned.fill(
-              child: ProductContainer(
-                child: ProductBanner()
-                )
-              ),
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadiusDirectional.only(
+          topStart: Radius.circular(16.0),
+          topEnd: Radius.circular(16.0),
         ),
       ),
-    );
-  }
-}
-
-class ProductBanner extends StatelessWidget {
-  const ProductBanner({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-
-    final Size size = MediaQuery.of(context).size;
-    final double width = size.width;
-    final double height = size.height;
-
-    return SizedBox(
-      // TODO: BACKGROUND BANNER -- SIZING BANNER -- ARRANGMENT BANNER
       child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: const [
-              ProductNutriscore(score: Nutriscore.A),
-              ProductNovaScore(novascore: "Groupe 4"),
-            ],
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: _kHorizontalPadding,
+              vertical: _kVerticalPadding,
+            ),
+            child: _Header(),
           ),
-          const ProductEcoScore(ecoscore: "E")
+          _Scores(),
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: _kHorizontalPadding,
+              vertical: _kVerticalPadding,
+            ),
+            child: _Info(),
+          ),
         ],
       ),
     );
   }
 }
 
-
-class ProductEcoScore extends StatelessWidget {
-  final String ecoscore;
-  const ProductEcoScore({Key? key, required this.ecoscore}) : super(key: key);
+class _Header extends StatelessWidget {
+  const _Header({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    switch(ecoscore) {
-      case "A": return Row(
-        children: const [
-          Icon(
-            AppIcons.ecoscore_a,
-            color: Color(0xFF1E8F4E),
-          ),
-          Text("Très faible impact environnemental"),
-        ],
-      );
-      case "B": return Row(
-        children: const [
-          Icon(
-            AppIcons.ecoscore_b,
-            color: Color(0xFF2ECC71),
-          ),
-          Text("Faible impact environnemental")
-        ],
-      );
-      case "C": return Row(
-        children: const [
-          Icon(
-            AppIcons.ecoscore_c,
-            color: Color(0xFFFFC900),
-          ),
-          Text("Impact modéré sur l'environnement")
-        ],
-      );
-      case "D": return Row(
-        children: const [
-          Icon(
-            AppIcons.ecoscore_d,
-            color: Color(0xFFEF7E1A),
-          ),
-          Text("Impact environnemental élevé")
-        ],
-      );
-      case "E": return Row(
-      children: const [
-        Icon(
-          AppIcons.ecoscore_e,
-          color: Color(0xFFE62D19),
+    final TextTheme textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Petits pois et carottes',
+          style: textTheme.headline1,
         ),
-        Text(" Impact environnemental très élevé")
+        const SizedBox(
+          height: 3.0,
+        ),
+        Text(
+          'Cassegrain',
+          style: textTheme.headline2,
+        ),
+        const SizedBox(
+          height: 8.0,
+        ),
+        Text(
+          'Petits pois & carottes à l\'étuvée avec garniture',
+          style: textTheme.headline3,
+        ),
       ],
     );
-      default: return Text("Error Ecoscore");
-
-    }
   }
 }
 
+class _Scores extends StatelessWidget {
+  static const double _horizontalPadding = _Body._kHorizontalPadding;
+  static const double _verticalPadding = 18.0;
 
-class ProductNovaScore extends StatelessWidget {
-  final String novascore;
-
-  const ProductNovaScore({Key? key, required this.novascore}) : super(key: key);
+  const _Scores({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    switch(novascore) {
-      case "Groupe 1": return Column(
-        children: const [
-          Text("Groupe NOVA"),
-          Text("Aliments non transformés ou transformés minimalement")
-        ],
-      );
-      case "Groupe 2": return Column(
-        children: const [
-          Text("Groupe NOVA"),
-          Text("Ingrédients culinaires transformés")
-        ],
-      );
-      case "Groupe 3": return Column(
-        children: const [
-          Text("Groupe NOVA"),
-          Text("Aliments transformés")
-        ],
-      );
-      case "Groupe 4": return Column(
-        children: const [
-          Text("Groupe NOVA"),
-          Text("Produits alimentaires et boissons ultra-transformés")
-        ],
-      );
-      default: return Text("Error novascore");
-    }
+    return Container(
+      color: AppColors.gray1,
+      width: double.infinity,
+      child: Column(children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: _verticalPadding,
+            horizontal: _horizontalPadding,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Expanded(
+                flex: 44,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.only(end: 5.0),
+                    child: _Nutriscore(
+                      nutriscore: ProductNutriscore.A,
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                width: 1.0,
+                height: 100.0,
+                color: Theme.of(context).dividerColor,
+              ),
+              const Expanded(
+                flex: 66,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.only(start: 25.0),
+                    child: _NovaGroup(
+                      novaScore: ProductNovaScore.Group1,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Divider(
+          height: 1.0,
+        ),
+        const Padding(
+          padding: EdgeInsets.symmetric(
+            vertical: _verticalPadding,
+            horizontal: _horizontalPadding,
+          ),
+          child: _EcoScore(
+            ecoScore: ProductEcoScore.D,
+          ),
+        ),
+      ]),
+    );
   }
 }
 
+class _Nutriscore extends StatelessWidget {
+  final ProductNutriscore nutriscore;
 
-enum Nutriscore {
-  A("a"),
-  B("b"),
-  C("c"),
-  D("d"),
-  E("e");
-
-  final String letter;
-
-  const Nutriscore(this.letter);
-}
-
-class ProductNutriscore extends StatelessWidget {
-  final Nutriscore score;
-
-  const ProductNutriscore({
+  const _Nutriscore({
+    required this.nutriscore,
     Key? key,
-    required this.score,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-
-    final Size size = MediaQuery.of(context).size;
-    final double width = size.width;
-    final double height = size.height;
-
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Nutri-Score'),
+        Text(
+          'Nutri-Score',
+          style: Theme.of(context).textTheme.headline4,
+        ),
+        const SizedBox(
+          height: 5.0,
+        ),
         Image.asset(
-          'res/drawables/nutriscore_${score.letter}.png',
-          width: 78,
-          height: 42,
+          _findAssetName(),
+          width: 100.0,
+        ),
+      ],
+    );
+  }
+
+  String _findAssetName() {
+    switch (nutriscore) {
+      case ProductNutriscore.A:
+        return "res/drawables/nutriscore_a.png";
+      case ProductNutriscore.B:
+        return "res/drawables/nutriscore_b.png";
+      case ProductNutriscore.C:
+        return "res/drawables/nutriscore_c.png";
+      case ProductNutriscore.D:
+        return "res/drawables/nutriscore_d.png";
+      case ProductNutriscore.E:
+        return "res/drawables/nutriscore_e.png";
+      default:
+        throw Exception('Unknown nutriscore value!');
+    }
+  }
+}
+
+class _NovaGroup extends StatelessWidget {
+  final ProductNovaScore novaScore;
+
+  const _NovaGroup({
+    required this.novaScore,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Groupe Nova',
+          style: Theme.of(context).textTheme.headline4?.copyWith(
+            fontSize: 16.0,
+          ),
+        ),
+        const SizedBox(
+          height: 5.0,
+        ),
+        Text(
+          _findLabel(),
+          style: const TextStyle(
+            color: AppColors.gray2,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _findLabel() {
+    switch (novaScore) {
+      case ProductNovaScore.Group1:
+        return 'Aliments non transformés ou transformés minimalement';
+      case ProductNovaScore.Group2:
+        return 'Ingrédients culinaires transformés';
+      case ProductNovaScore.Group3:
+        return 'Aliments transformés';
+      case ProductNovaScore.Group4:
+        return 'Produits alimentaires et boissons ultra-transformés';
+      default:
+        throw Exception('Unknown nova group!');
+    }
+  }
+}
+
+class _EcoScore extends StatelessWidget {
+  final ProductEcoScore ecoScore;
+
+  const _EcoScore({
+    required this.ecoScore,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'EcoScore',
+          style: Theme.of(context).textTheme.headline4,
+        ),
+        const SizedBox(
+          height: 5.0,
+        ),
+        Row(
+          children: [
+            Icon(
+              _findIcon(),
+              color: _findIconColor(),
+            ),
+            const SizedBox(
+              width: 10.0,
+            ),
+            Text(
+              _findLabel(),
+              style: const TextStyle(
+                color: AppColors.gray2,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  IconData _findIcon() {
+    switch (ecoScore) {
+      case ProductEcoScore.A:
+        return AppIcons.ecoscore_a;
+      case ProductEcoScore.B:
+        return AppIcons.ecoscore_b;
+      case ProductEcoScore.C:
+        return AppIcons.ecoscore_c;
+      case ProductEcoScore.D:
+        return AppIcons.ecoscore_d;
+      case ProductEcoScore.E:
+        return AppIcons.ecoscore_e;
+      default:
+        throw Exception('Unknown nova group!');
+    }
+  }
+
+  Color _findIconColor() {
+    switch (ecoScore) {
+      case ProductEcoScore.A:
+        return AppColors.ecoScoreA;
+      case ProductEcoScore.B:
+        return AppColors.ecoScoreB;
+      case ProductEcoScore.C:
+        return AppColors.ecoScoreC;
+      case ProductEcoScore.D:
+        return AppColors.ecoScoreD;
+      case ProductEcoScore.E:
+        return AppColors.ecoScoreE;
+      default:
+        throw Exception('Unknown nova group!');
+    }
+  }
+
+  String _findLabel() {
+    switch (ecoScore) {
+      case ProductEcoScore.A:
+        return 'Très faible impact environnemental';
+      case ProductEcoScore.B:
+        return 'Faible impact environnemental';
+      case ProductEcoScore.C:
+        return 'Impact modéré sur l\'environnement';
+      case ProductEcoScore.D:
+        return 'Impact environnemental élevé';
+      case ProductEcoScore.E:
+        return 'Impact environnemental très élevé';
+    }
+  }
+}
+
+class _Info extends StatelessWidget {
+  const _Info({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const _ProductItemValue(
+          label: 'Quantité',
+          value: '200g (égoutté 130g)',
+        ),
+        const _ProductItemValue(
+          label: 'Vendu',
+          value: 'France',
+          includeDivider: false,
+        ),
+        const SizedBox(
+          height: 15.0,
+        ),
+        Row(
+          children: const [
+            Expanded(
+              flex: 40,
+              child: _ProductBubble(
+                label: 'Végétalien',
+                value: _ProductBubbleValue.on,
+              ),
+            ),
+            Spacer(
+              flex: 10,
+            ),
+            Expanded(
+              flex: 40,
+              child: _ProductBubble(
+                label: 'Végétarien',
+                value: _ProductBubbleValue.off,
+              ),
+            ),
+          ],
         )
       ],
     );
   }
 }
 
+class _ProductItemValue extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool includeDivider;
 
-class ProductImage extends StatelessWidget {
-  const ProductImage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 200,
-      child: Image.network(
-        'https://images.openfoodfacts.org/images/products/317/568/001/1480/front_fr.139.400.jpg',
-        fit: BoxFit.cover,
-      ),
-    );
-  }
-}
-
-class ProductContainer extends StatelessWidget {
-  final Widget? child;
-
-  const ProductContainer({
+  const _ProductItemValue({
+    required this.label,
+    required this.value,
+    this.includeDivider = true,
     Key? key,
-    this.child,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    const BorderRadiusDirectional radius = BorderRadiusDirectional.only(
-      topStart: Radius.circular(16.0),
-      topEnd: Radius.circular(16.0),
-    );
-    return SingleChildScrollView(
-      child: Scrollbar(
-        child: Container(
-          height: 10000,
-          margin: const EdgeInsets.only(
-            top: 150,
-          ),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: radius,
-          ),
-          child: ClipRRect(
-            borderRadius: radius,
-            child: child,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  value,
+                  textAlign: TextAlign.end,
+                ),
+              ),
+            ],
           ),
         ),
+        if (includeDivider) const Divider(height: 1.0)
+      ],
+    );
+  }
+}
+
+class _ProductBubble extends StatelessWidget {
+  final String label;
+  final _ProductBubbleValue value;
+
+  const _ProductBubble({required this.label, required this.value, Key? key})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.blueLight,
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      padding: const EdgeInsets.symmetric(
+        vertical: 10.0,
+        horizontal: 15.0,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            value == _ProductBubbleValue.on
+                ? AppIcons.checkmark
+                : AppIcons.close,
+            color: AppColors.white,
+          ),
+          const SizedBox(
+            width: 10.0,
+          ),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.white),
+            ),
+          )
+        ],
       ),
     );
   }
 }
+
+enum _ProductBubbleValue { on, off }
+
+enum ProductDetailsCurrentTab { summary, info, nutrition, nutritionalValues }
