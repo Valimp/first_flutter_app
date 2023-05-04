@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:first_flutter_app/product.dart';
 import 'package:first_flutter_app/app_colors.dart';
 import 'package:first_flutter_app/app_icons.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ProductSummary extends StatefulWidget {
   static const double kImageHeight = 300.0;
@@ -127,10 +127,13 @@ class FicheScreen extends StatelessWidget {
           tooltip: 'Fermer l\'écran',
         ),
       ),
-      const Align(
+      Align(
         alignment: AlignmentDirectional.topEnd,
         child: _HeaderIcon(
           icon: AppIcons.share,
+          onPressed: () {
+            Share.share('https://fr.openfoodfacts.org/produit/3017620422003/');
+          },
           tooltip: 'Partager',
         ),
       ),
